@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<!-- saved from url=(0032)file:///C:/platformer/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLATFORMER</title>
+    <link href="./PLATFORMER v1_files/css2" rel="stylesheet">
+        <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a0f;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        #gameCanvas {
+            display: block;
+        }
+        
+        #score {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 100;
+            text-shadow: 0 0 8px #fff;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 12px;
+            border: 1px solid #fff;
+            border-radius: 4px;
+        }
+        
+        #controls-hint {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 11px;
+            z-index: 100;
+            letter-spacing: 1px;
+        }
+        /* Leveling UI */
+        #level-bar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 180px;
+            height: 4px;
+            background: #222;
+            z-index: 102;
+        }
+        #level-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+        }
+        #level-display {
+            position: fixed;
+            top: 8px;
+            left: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 10px;
+            z-index: 102;
+        }
+        #skill-points {
+            position: fixed;
+            top: 8px;
+            left: 60px;
+            color: #ff0;
+            font-size: 10px;
+            z-index: 102;
+        }
+        /* Skill panel - under score */
+        #skill-panel {
+            position: fixed;
+            top: 70px;
+            right: 16px;
+            width: 180px;
+            max-height: 50vh;
+            overflow: auto;
+            background: rgba(20,20,20,.95);
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 8px;
+            display: none;
+            z-index: 102;
+        }
+        #skill-panel summary {
+            cursor: pointer;
+            font-size: 12px;
+            color: #fff;
+            font-weight: 600;
+        }
+        #skill-panel details {
+            margin: 4px 0;
+        }
+        #skill-panel .skill-btn {
+            margin-top: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            cursor: pointer;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 3px;
+        }
+        #skill-panel .skill-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* Chat */
+        #chat-container {
+            position: fixed;
+            bottom: 60px;
+            left: 16px;
+            width: 400px;
+            max-height: 200px;
+            overflow: hidden;
+            display: none;
+            z-index: 200;
+        }
+        #chat-messages {
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 11px;
+            color: #ccc;
+        }
+        #chat-messages .msg { margin: 2px 0; }
+        #chat-messages .error { color: #f55; }
+        #chat-messages .success { color: #5f5; }
+        #chat-messages .info { color: #55f; }
+        #chat-input {
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #555;
+            color: #fff;
+            padding: 6px;
+            font-size: 11px;
+            margin-top: 4px;
+            font-family: inherit;
+        }
+        /* Customization panel */
+        #customize-panel {
+            position: fixed;
+            top: 70px;
+            right: 16px;
+            width: 180px;
+            background: rgba(20,20,20,.95);
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 8px;
+            display: none;
+            z-index: 102;
+        }
+        #customize-panel summary {
+            cursor: pointer;
+            font-size: 12px;
+            color: #fff;
+            font-weight: 600;
+        }
+        .hat-option {
+            padding: 4px;
+            margin: 4px 0;
+            background: #222;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            color: #aaa;
+        }
+        .hat-option:hover { background: #333; }
+        .hat-option.selected { background: #444; color: #fff; }
+        /* Debug panel */
+        #debug-panel {
+            position: fixed;
+            top: 100px;
+            left: 100px;
+            width: 250px;
+            background: rgba(0,0,0,.9);
+            border: 2px solid #f0f;
+            border-radius: 6px;
+            padding: 12px;
+            display: none;
+            z-index: 300;
+            cursor: move;
+        }
+        #debug-panel h3 {
+            color: #f0f;
+            font-size: 12px;
+            margin-bottom: 8px;
+            cursor: move;
+        }
+        #debug-panel label {
+            display: block;
+            color: #fff;
+            font-size: 10px;
+            margin: 6px 0;
+        }
+        #debug-panel input[type="range"] {
+            width: 100%;
+        }
+        #debug-panel .value { color: #0f0; float: right; }
+        #debug-panel button {
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            cursor: pointer;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="2133" height="1234"></canvas>
+    <div id="level-bar-container"><div id="level-bar-fill" style="width: 85.9259%;"></div></div>
+    <div id="level-display">LV 2</div>
+    <span id="skill-points">SP: 1</span>
+    <div id="skill-panel" aria-label="Skills" style="display: none;"><details open=""><summary>Skills</summary><div style="padding:8px;"><div style="margin-bottom:8px;font-size:11px;color:#ff0;">SP: 0</div><div style="margin:8px 0;padding:4px;background:#222;border-radius:4px;"><div style="font-size:11px;color:#fff;">XP Boost (Lv 0/10)</div><div style="font-size:10px;color:#aaa;">+15% XP per jump per level</div><button class="skill-btn" onclick="upgradeSkill(&#39;xpBoost&#39;)">Upgrade (1 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Wall Jump - <button class="skill-btn" onclick="upgradeSkill(&#39;wallJump&#39;)">Unlock (1 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Double Jump - <button class="skill-btn" onclick="upgradeSkill(&#39;doubleJump&#39;)">Unlock (1 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Triple Jump - <button class="skill-btn" onclick="upgradeSkill(&#39;tripleJump&#39;)">Unlock (2 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Super Jump - <button class="skill-btn" onclick="upgradeSkill(&#39;superJump&#39;)">Unlock (3 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Speed Boost - <button class="skill-btn" onclick="upgradeSkill(&#39;speedBoost&#39;)">Unlock (1 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Air Control - <button class="skill-btn" onclick="upgradeSkill(&#39;airControl&#39;)">Unlock (2 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Safe Fall - <button class="skill-btn" onclick="upgradeSkill(&#39;fallDamage&#39;)">Unlock (2 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Spike Proof - <button class="skill-btn" onclick="upgradeSkill(&#39;spikeImmunity&#39;)">Unlock (3 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Gold Rush - <button class="skill-btn" onclick="upgradeSkill(&#39;goldRush&#39;)">Unlock (2 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">XP Magnet - <button class="skill-btn" onclick="upgradeSkill(&#39;magnet&#39;)">Unlock (2 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Regen - <button class="skill-btn" onclick="upgradeSkill(&#39;regen&#39;)">Unlock (3 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Crit Jump - <button class="skill-btn" onclick="upgradeSkill(&#39;critJump&#39;)">Unlock (3 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Dash - <button class="skill-btn" onclick="upgradeSkill(&#39;dash&#39;)">Unlock (2 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Glider - <button class="skill-btn" onclick="upgradeSkill(&#39;glide&#39;)">Unlock (3 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Bounce - <button class="skill-btn" onclick="upgradeSkill(&#39;bounce&#39;)">Unlock (1 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Time Warp - <button class="skill-btn" onclick="upgradeSkill(&#39;timeSlow&#39;)">Unlock (4 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Ghost - <button class="skill-btn" onclick="upgradeSkill(&#39;ghost&#39;)">Unlock (4 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">Clone - <button class="skill-btn" onclick="upgradeSkill(&#39;clone&#39;)">Unlock (5 SP)</button></div><div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">MEGA - <button class="skill-btn" onclick="upgradeSkill(&#39;mega&#39;)">Unlock (10 SP)</button></div></div></details></div>
+    <div style="position:fixed;top:8px;right:120px;z-index:102;">
+        <button id="save-btn" style="background:#333;color:#fff;border:1px solid #555;padding:4px 8px;font-size:10px;cursor:pointer;border-radius:3px;">Save</button>
+        <button id="load-btn" style="background:#333;color:#fff;border:1px solid #555;padding:4px 8px;font-size:10px;cursor:pointer;border-radius:3px;">Load</button>
+        <input type="file" id="load-input" accept=".json" style="display:none;">
+    </div>
+    <div id="score">SCORE: 2</div>
+    <div id="customize-panel" aria-label="Customization" style="display: none;">
+        <details open="">
+            <summary>Customize</summary>
+            <div style="padding:8px;">
+                <div style="font-size:11px;color:#fff;margin-bottom:8px;">Hats</div>
+                <div class="hat-option" data-hat="none" onclick="setHat(&#39;none&#39;)">None</div>
+                <div class="hat-option" data-hat="crown" onclick="setHat(&#39;crown&#39;)">Crown</div>
+                <div class="hat-option" data-hat="cap" onclick="setHat(&#39;cap&#39;)">Cap</div>
+                <div class="hat-option" data-hat="ears" onclick="setHat(&#39;ears&#39;)">Ears</div>
+                <div class="hat-option" data-hat=" horns" onclick="setHat(&#39;horns&#39;)">Horns</div>
+                <div class="hat-option" data-hat="visor" onclick="setHat(&#39;visor&#39;)">Visor</div>
+            </div>
+        </details>
+    </div>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Type command... (press Q to toggle)" autocomplete="off">
+    </div>
+    <div id="debug-panel">
+        <h3>Debug Panel (Draggable)</h3>
+        <label>Player Speed <span class="value" id="debug-speed">0.8</span></label>
+        <input type="range" id="debug-speed-slider" min="0.1" max="3" step="0.1" value="0.8">
+        <label>Jump Height <span class="value" id="debug-jump">13</span></label>
+        <input type="range" id="debug-jump-slider" min="5" max="30" step="1" value="13">
+        <label>Score Multiplier <span class="value" id="debug-mult">1</span></label>
+        <input type="range" id="debug-mult-slider" min="1" max="6500" step="1" value="1">
+        <label>Gravity <span class="value" id="debug-grav">0.6</span></label>
+        <input type="range" id="debug-grav-slider" min="0.1" max="2" step="0.1" value="0.6">
+        <button onclick="closeDebug()">Close</button>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        const GRAVITY = 0.6;
+        const FRICTION = 0.88;
+        const MOVE_SPEED = 0.8;
+        const JUMP_FORCE = -13;
+        const MAX_SPEED = 6;
+        const MAX_JUMP_HEIGHT = 250;
+        // XP & leveling system
+        let totalXP = 0;
+        let level = 1;
+        let skillPoints = 0;
+        let lastJumpXP = 0;
+        let xpPopups = [];
+        let lastPlatformJumped = null;
+        let currentPlatform = null;
+        const XP_TO_LEVEL_BASE = 60;
+        const XP_LEVEL_MULTIPLIER = 1.5;
+        let skills = {
+            xpBoost: { level: 0, maxLevel: 10, perLevelBonus: 0.15, name: 'XP Boost', description: '+15% XP per jump per level' },
+            wallJump: { unlocked: false, cost: 1, name: 'Wall Jump', description: 'Unlimited wall jumps' },
+            doubleJump: { unlocked: false, cost: 1, name: 'Double Jump', description: 'Unlock double jump' },
+            tripleJump: { unlocked: false, cost: 2, name: 'Triple Jump', description: 'Unlock triple jump' },
+            superJump: { unlocked: false, cost: 3, name: 'Super Jump', description: '30% higher jump' },
+            speedBoost: { unlocked: false, cost: 1, name: 'Speed Boost', description: '15% faster movement' },
+            airControl: { unlocked: false, cost: 2, name: 'Air Control', description: 'Better air movement' },
+            fallDamage: { unlocked: false, cost: 2, name: 'Safe Fall', description: 'Reduce fall damage' },
+            spikeImmunity: { unlocked: false, cost: 3, name: 'Spike Proof', description: 'One free hit' },
+            goldRush: { unlocked: false, cost: 2, name: 'Gold Rush', description: 'Score multiplier' },
+            magnet: { unlocked: false, cost: 2, name: 'XP Magnet', description: 'Attract XP' },
+            regen: { unlocked: false, cost: 3, name: 'Regen', description: 'Slow health regen' },
+            critJump: { unlocked: false, cost: 3, name: 'Crit Jump', description: 'Chance for double XP' },
+            dash: { unlocked: false, cost: 2, name: 'Dash', description: 'Press Shift to dash' },
+            glide: { unlocked: false, cost: 3, name: 'Glider', description: 'Slow fall' },
+            bounce: { unlocked: false, cost: 1, name: 'Bounce', description: 'Bouncy platforms' },
+            timeSlow: { unlocked: false, cost: 4, name: 'Time Warp', description: 'Slow motion' },
+            ghost: { unlocked: false, cost: 4, name: 'Ghost', description: 'Pass through walls' },
+            clone: { unlocked: false, cost: 5, name: 'Clone', description: 'Create a clone' },
+            mega: { unlocked: false, cost: 10, name: 'MEGA', description: 'Become giant' }
+        };
+        const skillNames = Object.keys(skills);
+        // UI Bindings for Skill Tree
+        const toggleSkillsBtn = document.getElementById('score');
+        const skillPanel = document.getElementById('skill-panel');
+        if (toggleSkillsBtn && skillPanel) {
+            toggleSkillsBtn.addEventListener('click', () => {
+                skillPanel.style.display = (skillPanel.style.display === 'block') ? 'none' : 'block';
+                renderSkills();
+            });
+        }
+        function renderSkills() {
+            const panel = document.getElementById('skill-panel');
+            if (!panel) return;
+            let html = '<details open><summary>Skills</summary><div style="padding:8px;">';
+            html += `<div style="margin-bottom:8px;font-size:11px;color:#ff0;">SP: ${skillPoints}</div>`;
+            skillNames.forEach(name => {
+                const s = skills[name];
+                if (name === 'xpBoost') {
+                    html += `<div style="margin:8px 0;padding:4px;background:#222;border-radius:4px;">`;
+                    html += `<div style="font-size:11px;color:#fff;">${s.name} (Lv ${s.level}/${s.maxLevel})</div>`;
+                    html += `<div style="font-size:10px;color:#aaa;">${s.description}</div>`;
+                    if (s.level < s.maxLevel) {
+                        html += `<button class="skill-btn" onclick="upgradeSkill('${name}')">Upgrade (${s.level + 1} SP)</button>`;
+                    } else {
+                        html += `<span style="font-size:10px;color:#0f0;">MAXED</span>`;
+                    }
+                    html += `</div>`;
+                } else {
+                    const cost = s.cost || 1;
+                    const status = s.unlocked ? '<span style="color:#0f0;">OWNED</span>' : `<button class="skill-btn" onclick="upgradeSkill('${name}')">Unlock (${cost} SP)</button>`;
+                    html += `<div style="margin:6px 0;padding:4px;background:#222;border-radius:4px;font-size:11px;color:#fff;">${s.name} - ${status}</div>`;
+                }
+            });
+            html += '</div></details>';
+            panel.innerHTML = html;
+        }
+        window.upgradeSkill = function(name) {
+            const s = skills[name];
+            if (!s) return;
+            if (name === 'xpBoost') {
+                if (s.level < s.maxLevel && skillPoints >= 1) {
+                    skillPoints -= 1;
+                    s.level++;
+                    updateLevelUI();
+                    renderSkills();
+                }
+            } else {
+                const cost = s.cost || 1;
+                if (!s.unlocked && skillPoints >= cost) {
+                    skillPoints -= cost;
+                    s.unlocked = true;
+                    if (name === 'doubleJump') player.maxJumps = 3;
+                    if (name === 'tripleJump') player.maxJumps = 4;
+                    updateLevelUI();
+                    renderSkills();
+                }
+            }
+            const spDisplay = document.getElementById('skill-points');
+            if (spDisplay) spDisplay.textContent = `SP: ${skillPoints}`;
+        };
+        
+        // Chat system
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        
+        function addChatMessage(text, type = '') {
+            const div = document.createElement('div');
+            div.className = 'msg ' + type;
+            div.textContent = text;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function processCommand(cmd) {
+            const parts = cmd.trim().toLowerCase().split(' ');
+            const command = parts[0];
+            const arg = parts[1];
+            
+            switch(command) {
+                case 'help':
+                    addChatMessage('Commands: help, playerspeed <0.1-3>, jumpheight <5-30>, score <1-6500>, grav <0.1-2>, addsp <amount>, godmode, debug', 'info');
+                    break;
+                case 'playerspeed':
+                    if (arg) {
+                        const v = parseFloat(arg);
+                        if (v >= 0.1 && v <= 3) {
+                            MOVE_SPEED = v;
+                            document.getElementById('debug-speed').textContent = v;
+                            document.getElementById('debug-speed-slider').value = v;
+                            addChatMessage(`Player speed set to ${v}`, 'success');
+                        } else addChatMessage('Value must be 0.1-3', 'error');
+                    }
+                    break;
+                case 'jumpheight':
+                    if (arg) {
+                        const v = parseInt(arg);
+                        if (v >= 5 && v <= 30) {
+                            JUMP_FORCE = -v;
+                            document.getElementById('debug-jump').textContent = v;
+                            document.getElementById('debug-jump-slider').value = v;
+                            addChatMessage(`Jump height set to ${v}`, 'success');
+                        } else addChatMessage('Value must be 5-30', 'error');
+                    }
+                    break;
+                case 'score':
+                    if (arg) {
+                        const v = parseInt(arg);
+                        if (v >= 1 && v <= 6500) {
+                            scoreMultiplier = v;
+                            document.getElementById('debug-mult').textContent = v;
+                            document.getElementById('debug-mult-slider').value = v;
+                            addChatMessage(`Score multiplier set to ${v}x`, 'success');
+                        } else addChatMessage('Value must be 1-6500', 'error');
+                    }
+                    break;
+                case 'grav':
+                    if (arg) {
+                        const v = parseFloat(arg);
+                        if (v >= 0.1 && v <= 2) {
+                            GRAVITY = v;
+                            document.getElementById('debug-grav').textContent = v;
+                            document.getElementById('debug-grav-slider').value = v;
+                            addChatMessage(`Gravity set to ${v}`, 'success');
+                        } else addChatMessage('Value must be 0.1-2', 'error');
+                    }
+                    break;
+                case 'addsp':
+                    if (arg) {
+                        const v = parseInt(arg);
+                        if (v > 0) {
+                            skillPoints += v;
+                            document.getElementById('skill-points').textContent = `SP: ${skillPoints}`;
+                            addChatMessage(`Added ${v} skill points`, 'success');
+                        }
+                    }
+                    break;
+                case 'godmode':
+                    addChatMessage('God mode activated! (You are invincible)', 'success');
+                    break;
+                case 'debug':
+                    document.getElementById('debug-panel').style.display = 'block';
+                    addChatMessage('Debug panel opened', 'info');
+                    break;
+                default:
+                    addChatMessage(`Unknown command: ${command}`, 'error');
+            }
+        }
+        
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                processCommand(this.value);
+                this.value = '';
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'KeyQ') {
+                chatOpen = !chatOpen;
+                chatContainer.style.display = chatOpen ? 'block' : 'none';
+                if (chatOpen) chatInput.focus();
+            }
+        });
+        
+        // Customization
+        window.setHat = function(hat) {
+            currentHat = hat;
+            document.querySelectorAll('.hat-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`[data-hat="${hat}"]`).classList.add('selected');
+            customizePanel.style.display = 'none';
+        };
+        
+        // Debug panel
+        document.getElementById('debug-speed-slider').addEventListener('input', function() {
+            const v = parseFloat(this.value);
+            MOVE_SPEED = v;
+            document.getElementById('debug-speed').textContent = v;
+        });
+        document.getElementById('debug-jump-slider').addEventListener('input', function() {
+            const v = parseInt(this.value);
+            JUMP_FORCE = -v;
+            document.getElementById('debug-jump').textContent = v;
+        });
+        document.getElementById('debug-mult-slider').addEventListener('input', function() {
+            const v = parseInt(this.value);
+            scoreMultiplier = v;
+            document.getElementById('debug-mult').textContent = v;
+        });
+        document.getElementById('debug-grav-slider').addEventListener('input', function() {
+            const v = parseFloat(this.value);
+            GRAVITY = v;
+            document.getElementById('debug-grav').textContent = v;
+        });
+        window.closeDebug = function() {
+            document.getElementById('debug-panel').style.display = 'none';
+        };
+        
+        // Drag debug panel
+        const debugPanel = document.getElementById('debug-panel');
+        let dragging = false, dragOffsetX, dragOffsetY;
+        debugPanel.querySelector('h3').addEventListener('mousedown', function(e) {
+            dragging = true;
+            dragOffsetX = e.clientX - debugPanel.offsetLeft;
+            dragOffsetY = e.clientY - debugPanel.offsetTop;
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (dragging) {
+                debugPanel.style.left = (e.clientX - dragOffsetX) + 'px';
+                debugPanel.style.top = (e.clientY - dragOffsetY) + 'px';
+            }
+        });
+        document.addEventListener('mouseup', function() { dragging = false; });
+        
+        // Score click toggle customization
+        const customizePanel = document.getElementById('customize-panel');
+        scoreDisplay.addEventListener('click', function() {
+            customizePanel.style.display = (customizePanel.style.display === 'block') ? 'none' : 'block';
+        });
+        
+        function saveGame() {
+            const saveData = {
+                totalXP,
+                level,
+                skillPoints,
+                skills,
+                score,
+                scoreMultiplier,
+                currentHat
+            };
+            const blob = new Blob([JSON.stringify(saveData)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'platformer_save.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function loadGame(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const saveData = JSON.parse(e.target.result);
+                    if (saveData.totalXP !== undefined) totalXP = saveData.totalXP;
+                    if (saveData.level !== undefined) level = saveData.level;
+                    if (saveData.skillPoints !== undefined) skillPoints = saveData.skillPoints;
+                    if (saveData.skills) {
+                        for (let key in saveData.skills) {
+                            if (skills[key]) {
+                                skills[key].unlocked = saveData.skills[key].unlocked;
+                                skills[key].level = saveData.skills[key].level || 0;
+                            }
+                        }
+                    }
+                    if (saveData.score !== undefined) score = saveData.score;
+                    if (saveData.scoreMultiplier !== undefined) {
+                        scoreMultiplier = saveData.scoreMultiplier;
+                        document.getElementById('debug-mult').textContent = scoreMultiplier;
+                        document.getElementById('debug-mult-slider').value = scoreMultiplier;
+                    }
+                    if (saveData.currentHat !== undefined) {
+                        currentHat = saveData.currentHat;
+                        setHat(currentHat);
+                    }
+                    updateLevelUI();
+                    renderSkills();
+                    const spDisplay = document.getElementById('skill-points');
+                    if (spDisplay) spDisplay.textContent = `SP: ${skillPoints}`;
+                    const levelDisplay = document.getElementById('level-display');
+                    if (levelDisplay) levelDisplay.textContent = `LV ${level}`;
+                    alert('Game loaded!');
+                } catch (err) {
+                    alert('Invalid save file');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        document.getElementById('save-btn').addEventListener('click', saveGame);
+        document.getElementById('load-btn').addEventListener('click', () => {
+            document.getElementById('load-input').click();
+        });
+        document.getElementById('load-input').addEventListener('change', function(e) {
+            if (e.target.files[0]) loadGame(e.target.files[0]);
+        });
+function getXPPerJump() {
+    let v = Math.floor(Math.random() * 4) + 2; // 2-5 XP per jump
+    v = Math.round(v * (1 + skills.xpBoost.level * skills.xpBoost.perLevelBonus));
+    return v;
+}
+function gainXP(amount){
+    totalXP += amount;
+    updateLevelUI();
+    spawnXPPopup(amount);
+}
+function getXPForLevel(lvl) {
+    return Math.floor(XP_TO_LEVEL_BASE * Math.pow(XP_LEVEL_MULTIPLIER, lvl - 1));
+}
+function updateLevelUI(){
+    let xpForCurrentLevel = getXPForLevel(level);
+    let xpForNextLevel = getXPForLevel(level + 1);
+    let xpProgress = totalXP;
+    let levelsGained = 0;
+    while (xpProgress >= xpForNextLevel) {
+        xpProgress -= xpForNextLevel;
+        levelsGained++;
+        level++;
+        xpForCurrentLevel = xpForNextLevel;
+        xpForNextLevel = getXPForLevel(level + 1);
+    }
+    const fill = Math.min(100, (xpProgress / xpForNextLevel) * 100);
+    const bar = document.getElementById('level-bar-fill');
+    if (bar) bar.style.width = fill + '%';
+    const display = document.getElementById('level-display');
+    if (display) display.textContent = `LV ${level}`;
+    // Award skill points on level up
+    if (levelsGained > 0) {
+        skillPoints += levelsGained;
+        const spDisplay = document.getElementById('skill-points');
+        if (spDisplay) spDisplay.textContent = `SP: ${skillPoints}`;
+    }
+}
+function spawnXPPopup(value){
+    xpPopups.push({ x: 0, y: 0, value, life: 1000, alpha: 1, vy: -1, offsetY: 0 });
+}
+function detectWallJumpCandidate(){
+            for (let w of walls){
+                const horizontal = (player.x + player.width) > w.x && player.x < (w.x + w.width);
+                const vertical = (player.y + player.height) > w.y && player.y < (w.y + w.height);
+                if (horizontal && vertical) return w;
+            }
+            return null;
+        }
+        
+        function getStartPlatformY() {
+            return canvas.height - 80;
+        }
+        
+        let player = {
+            x: 100,
+            y: 0,
+            width: 30,
+            height: 40,
+            vx: 0,
+            vy: 0,
+            onGround: false,
+            jumpsLeft: 2,
+            maxJumps: 2
+        };
+        
+        let keys = { left: false, right: false, jump: false };
+        let platforms = [];
+        let movingPlatforms = [];
+        let walls = [];
+        let spikes = [];
+        let score = 0;
+        let scoreMultiplier = 1;
+        let nearWall = null;
+        let cameraX = 0;
+        let worm = { x: -500, y: 0, width: 40, height: 15, speed: 1.8, active: false };
+        let currentHat = 'none';
+        let chatOpen = false;
+        
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let fps = 60;
+        let fpsTimer = 0;
+        
+        let lastPlatform = null;
+        
+        function generatePlatform(startX, useLastY = true, allowMoving = false) {
+            const minGap = 70;
+            const maxGap = 160;
+            const minWidth = 100;
+            const maxWidth = 220;
+            
+            let x = startX + minGap + Math.random() * (maxGap - minGap);
+            let y, minJumpY, maxJumpY;
+            
+            const minY = 160;
+            const maxY = canvas.height - 150;
+            
+            if (useLastY && lastPlatform) {
+                const lastY = lastPlatform.y;
+                const availableUp = MAX_JUMP_HEIGHT - 50;
+                const availableDown = lastY + 200;
+                
+                minJumpY = Math.max(minY, lastY - availableUp);
+                maxJumpY = availableDown;
+                
+                y = minJumpY + Math.random() * (maxJumpY - minJumpY);
+            } else {
+                y = minY + Math.random() * (maxY - minY);
+            }
+            // Clamp to keep platforms visible
+            const minVisibleY = 100;
+            const maxVisibleY = Math.max(minVisibleY, canvas.height - 60);
+            y = Math.max(minVisibleY, Math.min(maxVisibleY, y));
+            
+            let width = minWidth + Math.random() * (maxWidth - minWidth);
+            
+            const plat = { x, y, width, height: 20 };
+            lastPlatform = plat;
+            return plat;
+        }
+        
+        function generateWall(startX) {
+            const minY = 200;
+            const maxY = canvas.height - 200;
+            const wallHeight = 80 + Math.random() * 100;
+            const x = startX + 100 + Math.random() * 150;
+            const y = minY + Math.random() * (maxY - minY);
+            
+            return {
+                x, y, width: 25, height: wallHeight,
+                dir: Math.random() < 0.5 ? 1 : -1,
+                speed: 1 + Math.random() * 1.5
+            };
+        }
+        
+        function generateSpike(platform, moving = false) {
+            if (Math.random() < 0.35) {
+                const spikeCount = Math.floor(Math.random() * 3) + 1;
+                const spikeWidth = 18;
+                const spikeX = platform.x + Math.random() * (platform.width - spikeCount * spikeWidth);
+                
+                for (let i = 0; i < spikeCount; i++) {
+                    const spike = {
+                        x: spikeX + i * spikeWidth,
+                        y: platform.y - 12,
+                        width: spikeWidth,
+                        height: 12
+                    };
+                    if (moving) {
+                        spike.platform = platform;
+                        spike.offsetX = spike.x - platform.x;
+                        spike.isMoving = true;
+                    }
+                    spikes.push(spike);
+                }
+            }
+        }
+        function onJump(platform){
+            if (platform && platform !== lastPlatformJumped) {
+                lastPlatformJumped = platform;
+                const gain = getXPPerJump();
+                gainXP(gain);
+            } else if (!platform) {
+                lastPlatformJumped = null;
+            }
+        }
+        
+        function initWorld() {
+            const startY = getStartPlatformY();
+            
+            platforms = [{
+                x: 50,
+                y: startY,
+                width: 450,
+                height: 40
+            }];
+            
+            movingPlatforms = [];
+            walls = [];
+            spikes = [];
+            lastPlatform = { x: 50, y: startY, width: 450, height: 40 };
+            
+            let lastX = 500;
+            for (let i = 0; i < 80; i++) {
+                const isMoving = Math.random() < 0.12;
+                const plat = generatePlatform(lastX, true, false);
+                
+                if (isMoving) {
+                    plat.moveRange = 60 + Math.random() * 80;
+                    plat.moveSpeed = 0.5 + Math.random() * 1;
+                    plat.originalY = plat.y;
+                    plat.moveDir = Math.random() < 0.5 ? 1 : -1;
+                    movingPlatforms.push(plat);
+                    generateSpike(plat, true);
+                } else {
+                    platforms.push(plat);
+                    generateSpike(plat, false);
+                }
+                
+                lastX = plat.x + plat.width;
+            }
+            
+            for (let i = 0; i < 20; i++) {
+                const wallX = 300 + i * 250 + Math.random() * 150;
+                walls.push(generateWall(wallX));
+            }
+            
+            player.x = 100;
+            player.y = startY - player.height;
+            player.vx = 0;
+            player.vy = 0;
+            player.jumpsLeft = 2;
+            cameraX = 0;
+            score = 0;
+        }
+        
+        function extendWorld() {
+            const allPlatforms = [...platforms, ...movingPlatforms];
+            let lastX = allPlatforms.reduce((max, p) => Math.max(max, p.x + p.width), 0);
+            
+            if (lastX < cameraX + canvas.width + 1200) {
+                for (let i = 0; i < 20; i++) {
+                    const isMoving = Math.random() < 0.12;
+                    const plat = generatePlatform(lastX, true, false);
+                    
+                    if (isMoving) {
+                        plat.moveRange = 60 + Math.random() * 80;
+                        plat.moveSpeed = 0.5 + Math.random() * 1;
+                        plat.originalY = plat.y;
+                        plat.moveDir = Math.random() < 0.5 ? 1 : -1;
+                        movingPlatforms.push(plat);
+                        generateSpike(plat, true);
+                    } else {
+                        platforms.push(plat);
+                        generateSpike(plat, false);
+                    }
+                    
+                    lastX = plat.x + plat.width;
+                }
+                
+                for (let i = 0; i < 5; i++) {
+                    const wallX = lastX + 300 + i * 250;
+                    walls.push(generateWall(wallX));
+                }
+            }
+            
+            const cullX = cameraX - 300;
+            platforms = platforms.filter(p => p.x + p.width > cullX);
+            movingPlatforms = movingPlatforms.filter(p => p.x + p.width > cullX);
+            spikes = spikes.filter(s => s.x + s.width > cullX);
+            walls = walls.filter(w => w.x + w.width > cullX);
+        }
+        
+        function resetPlayer() {
+            const startY = getStartPlatformY();
+            player.x = 100;
+            player.y = startY - player.height;
+            player.vx = 0;
+            player.vy = 0;
+            player.jumpsLeft = 2;
+            cameraX = 0;
+            score = 0;
+            worm.active = false;
+            worm.x = -500;
+            lastPlatform = null;
+            initWorld();
+        }
+        
+        document.addEventListener('keydown', e => {
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                const wall = detectWallJumpCandidate();
+                if (!keys.jump) {
+                    if (wall && skills.wallJump.unlocked) {
+                        player.vy = JUMP_FORCE * 0.9;
+                        player.vx = (player.x < wall.x) ? -(MOVE_SPEED * 2) : (MOVE_SPEED * 2);
+                        onJump(currentPlatform);
+                    } else if (player.jumpsLeft > 0) {
+                        player.vy = JUMP_FORCE;
+                        player.jumpsLeft--;
+                        onJump(currentPlatform);
+                    }
+                }
+                keys.jump = true;
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', e => {
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
+            if (e.code === 'Space' || e.code === 'ArrowUp') keys.jump = false;
+        });
+        
+        function updatePlatforms(deltaTime) {
+            const allPlatforms = [...platforms, ...movingPlatforms];
+            
+            movingPlatforms.forEach(plat => {
+                plat.y += plat.moveSpeed * plat.moveDir;
+                if (plat.y > plat.originalY + plat.moveRange) plat.moveDir = -1;
+                if (plat.y < plat.originalY - plat.moveRange) plat.moveDir = 1;
+            });
+            
+            // Update moving spikes positions
+            spikes.forEach(spike => {
+                if (spike.isMoving && spike.platform) {
+                    spike.y = spike.platform.y - 12;
+                    spike.x = spike.platform.x + spike.offsetX;
+                }
+            });
+            
+            walls.forEach(wall => {
+                wall.y += wall.speed * wall.dir;
+                if (wall.y < 100) wall.dir = 1;
+                if (wall.y + wall.height > canvas.height - 100) wall.dir = -1;
+            });
+        }
+        
+        function checkCollision(plat) {
+            return player.x < plat.x + plat.width &&
+                player.x + player.width > plat.x &&
+                player.y < plat.y + plat.height &&
+                player.y + player.height > plat.y;
+        }
+        
+        function update(deltaTime) {
+            const wasOnGround = player.onGround;
+            let justLanded = false;
+            if (keys.left) player.vx -= MOVE_SPEED;
+            if (keys.right) player.vx += MOVE_SPEED;
+            
+            player.vx *= FRICTION;
+            player.vy += GRAVITY;
+            
+            if (player.vx > MAX_SPEED) player.vx = MAX_SPEED;
+            if (player.vx < -MAX_SPEED) player.vx = -MAX_SPEED;
+            
+            player.x += player.vx;
+            player.y += player.vy;
+            
+            player.onGround = false;
+            currentPlatform = null;
+            
+            const allPlatforms = [...platforms, ...movingPlatforms];
+            
+            for (const plat of allPlatforms) {
+                if (checkCollision(plat)) {
+                    const overlapLeft = (player.x + player.width) - plat.x;
+                    const overlapRight = (plat.x + plat.width) - player.x;
+                    const overlapTop = (player.y + player.height) - plat.y;
+                    const overlapBottom = (plat.y + plat.height) - player.y;
+                    
+                    const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+                    
+                    if (minOverlap === overlapTop && player.vy >= 0) {
+                        player.y = plat.y - player.height;
+                        player.vy = 0;
+                        player.onGround = true;
+                        player.jumpsLeft = player.maxJumps;
+                        currentPlatform = plat;
+                    } else if (minOverlap === overlapBottom && player.vy < 0) {
+                        player.y = plat.y + plat.height;
+                        player.vy = 0;
+                    } else if (minOverlap === overlapLeft) {
+                        player.x = plat.x - player.width;
+                        player.vx = 0;
+                    } else if (minOverlap === overlapRight) {
+                        player.x = plat.x + plat.width;
+                        player.vx = 0;
+                    }
+                }
+            }
+            
+            for (const wall of walls) {
+                if (checkCollision(wall)) {
+                    const overlapLeft = (player.x + player.width) - wall.x;
+                    const overlapRight = (wall.x + wall.width) - player.x;
+                    const overlapTop = (player.y + player.height) - wall.y;
+                    const overlapBottom = (wall.y + wall.height) - player.y;
+                    
+                    const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+                    
+                    if (minOverlap === overlapLeft) {
+                        player.x = wall.x - player.width;
+                        player.vx = 0;
+                    } else if (minOverlap === overlapRight) {
+                        player.x = wall.x + wall.width;
+                        player.vx = 0;
+                    } else if (minOverlap === overlapTop && player.vy >= 0) {
+                        player.y = wall.y - player.height;
+                        player.vy = 0;
+                        player.onGround = true;
+                    } else if (minOverlap === overlapBottom && player.vy < 0) {
+                        player.y = wall.y + wall.height;
+                        player.vy = 0;
+                    }
+                }
+            }
+            
+            for (const spike of spikes) {
+                if (checkCollision(spike)) {
+                    resetPlayer();
+                    return;
+                }
+            }
+            
+            if (player.y > canvas.height + 100) {
+                resetPlayer();
+                return;
+            }
+            // wall jumps: unlimited uses when near a wall
+            nearWall = null;
+            for (let w of walls) {
+                if ((player.x + player.width) > w.x && player.x < (w.x + w.width)) {
+                    const verticalOverlap = (player.y + player.height) > w.y && player.y < (w.y + w.height);
+                    if (verticalOverlap) { nearWall = w; break; }
+                }
+            }
+            // XP popups removed from here - now handled in draw() for smoother animation
+            // If just landed this frame, dissipate XP popups faster
+            justLanded = (!wasOnGround) && player.onGround;
+            if (justLanded) {
+                xpPopups.forEach(p => p.life = Math.max(0, p.life - 400));
+            }
+            // Clean up dead popups
+            xpPopups = xpPopups.filter(p => p.life > 0);
+            // Wall jump logic: allow unlimited wall jumps when near a wall
+            // No per-wall cooldown to satisfy unlimited uses
+            
+            if (player.x < cameraX) player.x = cameraX;
+            
+            score = Math.max(score, Math.floor(player.x / 100 * scoreMultiplier));
+            scoreDisplay.textContent = `SCORE: ${score}`;
+            
+            // Worm chase logic
+            if (player.x > 300 && !worm.active) {
+                worm.active = true;
+                worm.x = cameraX - 200;
+                worm.y = player.y;
+            }
+            if (worm.active) {
+                const targetX = player.x - 150;
+                if (worm.x < targetX) worm.x += worm.speed;
+                worm.y += (player.y - worm.y) * 0.02;
+                // Check worm collision
+                if (checkCollision(worm)) {
+                    resetPlayer();
+                    return;
+                }
+            }
+            
+            cameraX = player.x - 150;
+            
+            updatePlatforms(deltaTime);
+            extendWorld();
+        }
+        
+        function draw() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+            
+            ctx.fillStyle = '#c0c0c8';
+            platforms.forEach(plat => {
+                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+                ctx.strokeStyle = '#e0e0e8';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
+            });
+            
+            movingPlatforms.forEach(plat => {
+                const gradient = ctx.createLinearGradient(0, plat.y, 0, plat.y + plat.height);
+                gradient.addColorStop(0, '#2a4a6a');
+                gradient.addColorStop(1, '#1a3a5a');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+                ctx.strokeStyle = '#4a8acc';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
+            });
+            
+            ctx.fillStyle = '#5a3a2a';
+            walls.forEach(wall => {
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+                ctx.strokeStyle = '#8a5a3a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(wall.x, wall.y, wall.width, wall.height);
+            });
+            
+            ctx.fillStyle = '#f00';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#f00';
+            spikes.forEach(spike => {
+                ctx.beginPath();
+                ctx.moveTo(spike.x, spike.y + spike.height);
+                ctx.lineTo(spike.x + spike.width / 2, spike.y);
+                ctx.lineTo(spike.x + spike.width, spike.y + spike.height);
+                ctx.closePath();
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+            
+            const gradient = ctx.createLinearGradient(player.x, player.y, player.x + player.width, player.y + player.height);
+            gradient.addColorStop(0, '#4a9eff');
+            gradient.addColorStop(1, '#2a6ecc');
+            
+            ctx.fillStyle = gradient;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#4a9eff';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(player.x + 6, player.y + 8, 6, 6);
+            ctx.fillRect(player.x + 18, player.y + 8, 6, 6);
+            
+            if (player.jumpsLeft > 0) {
+                ctx.fillStyle = `rgba(0, 255, 0, ${player.jumpsLeft / player.maxJumps * 0.5})`;
+                ctx.fillRect(player.x + 10, player.y + player.height - 6, 10, 4);
+            }
+            // Draw hat
+            if (currentHat !== 'none') {
+                ctx.fillStyle = '#ffd700';
+                if (currentHat === 'crown') {
+                    ctx.beginPath();
+                    ctx.moveTo(player.x, player.y - 8);
+                    ctx.lineTo(player.x + 5, player.y - 15);
+                    ctx.lineTo(player.x + 10, player.y - 8);
+                    ctx.lineTo(player.x + 15, player.y - 15);
+                    ctx.lineTo(player.x + 20, player.y - 8);
+                    ctx.lineTo(player.x + 25, player.y - 15);
+                    ctx.lineTo(player.x + 30, player.y - 8);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (currentHat === 'cap') {
+                    ctx.fillRect(player.x - 2, player.y - 6, 34, 4);
+                    ctx.fillRect(player.x + 20, player.y - 6, 12, 3);
+                } else if (currentHat === 'ears') {
+                    ctx.fillRect(player.x - 4, player.y - 10, 6, 10);
+                    ctx.fillRect(player.x + 28, player.y - 10, 6, 10);
+                } else if (currentHat === 'horns') {
+                    ctx.fillStyle = '#f55';
+                    ctx.beginPath();
+                    ctx.moveTo(player.x + 2, player.y - 4);
+                    ctx.lineTo(player.x - 2, player.y - 15);
+                    ctx.lineTo(player.x + 8, player.y - 4);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(player.x + 22, player.y - 4);
+                    ctx.lineTo(player.x + 30, player.y - 15);
+                    ctx.lineTo(player.x + 28, player.y - 4);
+                    ctx.fill();
+                } else if (currentHat === 'visor') {
+                    ctx.fillStyle = '#0ff';
+                    ctx.fillRect(player.x - 2, player.y - 2, 34, 4);
+                }
+            }
+            // XP popups - follow player, float up, and dissipate
+            xpPopups.forEach(p => {
+                p.y += (p.vy || 0);
+                p.life -= 16;
+                p.alpha = Math.max(0, p.life / 1000);
+                if (p.alpha > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = '#0f0';
+                    ctx.font = 'bold 14px monospace';
+                    ctx.fillText(`+${p.value}`, player.x + player.width/2 - 15, player.y - 10 - p.offsetY);
+                    ctx.restore();
+                }
+                p.offsetY += 0.8;
+            });
+            
+            // Draw worm
+            if (worm.active) {
+                ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#fff';
+                // Worm body segments for wiggling effect
+                for (let i = 0; i < 5; i++) {
+                    const segX = worm.x - i * 12;
+                    const segY = worm.y + Math.sin(Date.now() / 100 + i) * 5;
+                    ctx.beginPath();
+                    ctx.ellipse(segX + 20, segY + 7, 15 - i * 2, 8 - i, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                // Worm head
+                ctx.beginPath();
+                ctx.ellipse(worm.x + 20, worm.y + 7, 18, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#f00';
+                ctx.fillRect(worm.x + 10, worm.y + 3, 4, 4);
+                ctx.fillRect(worm.x + 10, worm.y + 10, 4, 4);
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.restore();
+        }
+        
+        function updateFPS(deltaTime) {
+            frameCount++;
+            fpsTimer += deltaTime;
+            
+            if (fpsTimer >= 1000) {
+                frameCount = 0;
+                fpsTimer = 0;
+            }
+        }
+        
+        function gameLoop(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            update(deltaTime);
+            draw();
+            updateFPS(deltaTime);
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        initWorld();
+        requestAnimationFrame(gameLoop);
+    </script>
+
+
+</body></html>
